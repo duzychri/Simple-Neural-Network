@@ -1,4 +1,6 @@
-﻿namespace MNIST;
+﻿using System.Drawing;
+
+namespace MNIST;
 
 public class ImageData
 {
@@ -31,6 +33,22 @@ public class ImageData
             }
         }
         return result;
+    }
+
+    public Image ToImage()
+    {
+        int width = pixels.GetLength(0);
+        int height = pixels.GetLength(1);
+        Bitmap bitmap = new Bitmap(width, height);
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Color color = Color.FromArgb(255, pixels[x, y], pixels[x, y], pixels[x, y]);
+                bitmap.SetPixel(x, y, color);
+            }
+        }
+        return bitmap;
     }
 }
 
@@ -129,9 +147,9 @@ public static class Dataset
         {
             byte label = binaryReaderLabels.ReadByte();
             byte[,] pixels = new byte[numberOfRows, numberOfColumns];
-            for (int x = 0; x < numberOfRows; x++)
+            for (int y = 0; y < numberOfColumns; y++)
             {
-                for (int y = 0; y < numberOfColumns; y++)
+                for (int x = 0; x < numberOfRows; x++)
                 {
                     pixels[x, y] = binaryReaderImages.ReadByte();
                 }

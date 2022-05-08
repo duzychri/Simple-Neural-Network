@@ -1,4 +1,5 @@
 ﻿using Neural_Network;
+using System.Drawing;
 
 public static class ImageTest
 {
@@ -14,6 +15,13 @@ public static class ImageTest
         var testingSamples = testData
             .Select(t => new TrainingSample { Input = t.PixelsToDoubleArray(), ExpectedOutput = t.LabelToDoubleArray() })
             .ToArray();
+
+        //foreach (var t in testData)
+        //{
+        //    string folderPath2 = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName, "Resources2");
+        //    Directory.CreateDirectory(folderPath2);
+        //    t.ToImage().Save(Path.Combine(folderPath2, t.label + ".png"));
+        //}
 
         Console.WriteLine("Training network (This can take a while...)");
         NeuralNetwork neuralNetwork = new NeuralNetwork(28 * 28, new LayerData[] {
@@ -34,28 +42,14 @@ public static class ImageTest
         var deserializedAccuracy = deserializedTrainer.Test(testingSamples, Evaluate);
         Console.WriteLine($"Accuracy: {deserializedAccuracy:0.000}");
 
+        //TestWithOtherImages(deserializedNetwork);
+
         string serializedPath = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName, "Models", "number_recognition_model.model");
         Directory.CreateDirectory(Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName, "Models"));
         File.WriteAllBytes(serializedPath, serializedNetwork);
 
-        //TrainAndTest(new LayerData[] {
-        //    new LayerData { NeuronCount = 100, ActivationFunction = ActivationFunctionEnum.Relu },
-        //    new LayerData { NeuronCount = 10, ActivationFunction = ActivationFunctionEnum.Relu }
-        //}, trainingSamples, testingSamples, 10, 0.0001);
-
         Console.WriteLine("Done!");
         Console.WriteLine();
-    }
-
-    private static int accuracyCounter = 1;
-
-    private static void TrainAndTest(LayerData[] layers, TrainingSample[] trainingSamples, TrainingSample[] testingSamples, int epochs = 10, double learningRate = 0.0001)
-    {
-        NeuralNetwork neuralNetwork = new NeuralNetwork(28 * 28, layers);
-        NeuralNetworkTrainer trainer = neuralNetwork.GetTrainer(epochs: epochs, learningRate: learningRate);
-        trainer.Train(trainingSamples);
-        var accuracy = trainer.Test(testingSamples, Evaluate);
-        Console.WriteLine($"Accuracy {accuracyCounter++}: {accuracy:0.000}");
     }
 
     private static bool Evaluate(double[] output, double[] expectedOutput)
@@ -70,5 +64,43 @@ public static class ImageTest
         double maxValue = array.Max();
         int maxIndex = Array.IndexOf(array, maxValue);
         return maxIndex;
+    }
+
+    private static void TestWithOtherImages(NeuralNetwork network)
+    {
+        Console.WriteLine("Testing deserialized network with custom images");
+        string folderPath = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName, "Resources");
+
+        var fileNames = Directory.GetFiles(folderPath).Select(f => Path.GetFileName(f).Split('.')[0]).Distinct();
+
+        foreach (string fileName in fileNames)
+        {
+            int expectedOutput = int.Parse(fileName);
+            string imagePath = Path.Combine(folderPath, fileName + ".png");
+            Image image = Image.FromFile(imagePath);
+            double[] pixels = ExtractPixelsFromImage(image).Select(p => (double)p).ToArray();
+            double[] outputValues = network.Fire(pixels);
+            int output = Array.IndexOf(outputValues, outputValues.Max());
+            //Console.WriteLine($"expected: {expectedOutput}, output: {output}, success: {expectedOutput == output}");
+        }
+    }
+
+    private static byte[] ExtractPixelsFromImage(Image image)
+    {
+        Bitmap bitmap = image as Bitmap ?? new Bitmap(image);
+        byte[] pixels = new byte[bitmap.Width * bitmap.Height * 1];
+        int pixelsIndex = 0;
+        for (int y = 0; y < bitmap.Height; y++)
+        {
+            for (int x = 0; x < bitmap.Width; x++)
+            {
+                Color pixel = bitmap.GetPixel(x, y);
+                pixels[pixelsIndex++] = pixel.R;
+                //pixels[pixelsIndex++] = pixel.G;
+                //pixels[pixelsIndex++] = pixel.B;
+                //pixels[pixelsIndex++] = pixel.A;
+            }
+        }
+        return pixels;
     }
 }
