@@ -82,7 +82,7 @@ namespace Neural_Network
                 currLearningRate *= .9;
                 trainingSamples.Shuffle();
 
-                ThreadLocal<NeuralNetwork.Trainer> trainer = new ThreadLocal<NeuralNetwork.Trainer>(() => new NeuralNetwork.Trainer(Network));
+                ThreadLocal<NetworkTrainer> trainer = new ThreadLocal<NetworkTrainer>(() => new NetworkTrainer(Network));
 
 #if PARALLEL
                 Parallel.ForEach(trainingSamples, sample =>

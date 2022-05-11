@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ProtoBuf;
 
 namespace Neural_Network
 {
-    [Serializable, DataContract, ProtoContract]
+    [Serializable, DataContract]
     internal class NeuralNetworkData
     {
-        [DataMember, ProtoMember(1)]
+        [DataMember]
         public int InputSize;
-        [DataMember, ProtoMember(2)]
+        [DataMember]
         public NeuralLayerData[] Layers;
     }
 }

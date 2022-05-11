@@ -12,9 +12,9 @@ namespace Neural_Network
         internal Neuron[] Neurons { get; set; }
         internal ActivationFunction ActivationFunction { get; }
 
-        private readonly int index;
-        private readonly SlopeDelegate SlopeDelegate;
-        private readonly ActivationDelegate ActivationDelegate;
+        internal readonly int index;
+        internal readonly SlopeDelegate SlopeDelegate;
+        internal readonly ActivationDelegate ActivationDelegate;
 
         internal NeuralLayer(int index, ActivationFunction activationFunction)
         {
