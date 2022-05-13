@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 
 namespace Neural_Network
 {
@@ -21,7 +19,7 @@ namespace Neural_Network
         public static byte[] SerializeAsBytes(NeuralNetwork neuralNet)
         {
             NeuralNetworkData neuralNetworkData = ConvertToData(neuralNet);
-            return SerializeBinary(neuralNetworkData);
+            return SerializeBytes(neuralNetworkData);
         }
 
         /// <summary>
@@ -31,7 +29,7 @@ namespace Neural_Network
         /// <returns>The deserialized <see cref="NeuralNetwork"/>.</returns>
         public static NeuralNetwork DeserializeFromBytes(byte[] value)
         {
-            NeuralNetworkData neuralNetworkData = DeserializeBinary<NeuralNetworkData>(value);
+            NeuralNetworkData neuralNetworkData = DeserializeBytes<NeuralNetworkData>(value);
             return ConvertToNeuralNet(neuralNetworkData);
         }
 
@@ -39,31 +37,30 @@ namespace Neural_Network
 
         #region Utility Methods
 
-        private static byte[] SerializeBinary<T>(T value)
+        private static byte[] SerializeBytes<T>(T value)
         {
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
             using (MemoryStream compressedStream = new MemoryStream())
             using (MemoryStream serializedStream = new MemoryStream())
-            using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Compress, true))
+            using (GZipStream zipStream = new GZipStream(compressedStream, CompressionMode.Compress, true))
             {
-                serializer.WriteObject(serializedStream, value);
+                ProtoBuf.Serializer.Serialize(serializedStream, value);
                 serializedStream.Position = 0;
-                serializedStream.CopyTo(deflateStream);
-                deflateStream.Close();
+                serializedStream.CopyTo(zipStream);
+                zipStream.Close();
                 return compressedStream.ToArray();
             }
         }
 
-        private static T DeserializeBinary<T>(byte[] value)
+        private static T DeserializeBytes<T>(byte[] value)
         {
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
             using (MemoryStream inputStream = new MemoryStream(value))
             using (MemoryStream decompressedStream = new MemoryStream())
-            using (DeflateStream deflateStream = new DeflateStream(inputStream, CompressionMode.Decompress))
+            using (GZipStream zipStream = new GZipStream(inputStream, CompressionMode.Decompress))
             {
-                deflateStream.CopyTo(decompressedStream);
+                zipStream.CopyTo(decompressedStream);
                 decompressedStream.Position = 0;
-                return (T)serializer.ReadObject(decompressedStream);
+                T result = ProtoBuf.Serializer.Deserialize<T>(decompressedStream);
+                return result;
             }
         }
 
