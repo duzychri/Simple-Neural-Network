@@ -18,6 +18,8 @@ double accuracy = trainer.Test(testingSamples, Evaluate);
 
 ### Serializing & Deserializing
 
+Serializing uses protobuf-net to serialize to binary and then a gzip stream for compression.
+
 ```csharp
 byte[] serializedNetwork = NeuralNetworkSerializer.SerializeAsBytes(neuralNetwork);
 NeuralNetwork deserializedNetwork = NeuralNetworkSerializer.DeserializeFromBytes(serializedNetwork);
