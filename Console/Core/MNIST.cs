@@ -13,11 +13,21 @@ public class ImageData
         this.pixels = pixels;
     }
 
+    public float[] LabelToFloatArray()
+    {
+        return LabelToDoubleArray().Select(p => (float)p).ToArray();
+    }
+
     public double[] LabelToDoubleArray()
     {
         double[] result = new double[10];
         result[label] = 1;
         return result;
+    }
+
+    public float[] PixelsToFloatArray()
+    {
+        return PixelsToDoubleArray().Select(p => (float)p).ToArray();
     }
 
     public double[] PixelsToDoubleArray()
@@ -57,8 +67,16 @@ public class ImageData
 /// </remarks>
 public static class Dataset
 {
-    public static (ImageData[] trainingData, ImageData[] testData) LoadDataset(string folderPath)
+    private static ImageData[] cachedTrainingData = null;
+    private static ImageData[] cachedTestData = null;
+
+    public static (ImageData[] trainingData, ImageData[] testData) LoadDataset()
     {
+        if (cachedTrainingData != null && cachedTestData != null)
+        { return (cachedTrainingData, cachedTestData); }
+
+        string folderPath = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName, "Training Data");
+
         string compressedFolderPath = Path.Combine(folderPath, "Compressed");
         string uncompressedFolderPath = Path.Combine(folderPath, "Uncompressed");
         Directory.CreateDirectory(uncompressedFolderPath);
@@ -89,6 +107,10 @@ public static class Dataset
 
         ImageData[] trainingData = LoadImagesAndLabels(uncompressedTrainImages, uncompressedTrainLabels);
         ImageData[] testData = LoadImagesAndLabels(uncompressedTestImages, uncompressedTestLabels);
+
+        cachedTestData = testData;
+        cachedTrainingData = trainingData;
+
         return (trainingData, testData);
     }
 

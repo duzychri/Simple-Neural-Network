@@ -6,9 +6,8 @@ public static class ImageTest
     public static void Start()
     {
         Console.WriteLine("Starting Image Test!");
-        string folderPath = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName, "Training Data");
 
-        (MNIST.ImageData[] trainingData, MNIST.ImageData[] testData) = MNIST.Dataset.LoadDataset(folderPath);
+        (MNIST.ImageData[] trainingData, MNIST.ImageData[] testData) = MNIST.Dataset.LoadDataset();
         var trainingSamples = trainingData
             .Select(t => new TrainingSample { Input = t.PixelsToDoubleArray(), ExpectedOutput = t.LabelToDoubleArray() })
             .ToArray();
