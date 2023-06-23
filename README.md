@@ -1,5 +1,8 @@
 # Simple-Neural-Network
+
 A handcrafted multilayer perceptron neural network made in pure C#.
+
+You can try it out in your browser [here](https://duzychri.github.io/projects/image-classifier).
 
 ## How to use
 
